@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 exports.getAuth = async (req, res) => {
     try {
@@ -11,47 +12,56 @@ exports.getAuth = async (req, res) => {
     }
 }
 
-const bcrypt = require('bcrypt');
-
 exports.createAuth = async (req, res) => {
-    const { username, password, artist_id } = req.body;
+    const { username, password, name, email } = req.body; // Include 'email' here
 
-    if (!username || !password || !artist_id) {
-        return res.status(400).json({ error: 'Username, password, and artist_id are required' });
+    if (!username || !password || !name || !email) {
+        return res.status(400).json({ error: 'Username, password, name, and email are required' });
     }
 
+    const connection = await db.getConnection(); // Use a transaction for atomicity
+
     try {
-        const [existingUser] = await db.query('SELECT * FROM auth WHERE username = ?', [username]);
+        await connection.beginTransaction();
+
+        // Check if the username already exists
+        const [existingUser] = await connection.query('SELECT * FROM auth WHERE username = ?', [username]);
         if (existingUser.length > 0) {
+            await connection.rollback();
             return res.status(400).json({ error: 'Username already exists' });
         }
 
-        const [artist] = await db.query('SELECT * FROM artists WHERE id = ?', [artist_id]);
-        if (artist.length === 0) {
-            return res.status(404).json({ error: 'Artist not found' });
-        }
+        // Insert a new artist into the artist table
+        const [artistResult] = await connection.query('INSERT INTO artists (name, email) VALUES (?, ?)', [name, email]);
+        const artistId = artistResult.insertId;
 
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const result = await db.query(
+        // Insert the new user into the auth table
+        const [authResult] = await connection.query(
             'INSERT INTO auth (username, password, artist_id) VALUES (?, ?, ?)',
-            [username, hashedPassword, artist_id]
+            [username, hashedPassword, artistId]
         );
 
+        await connection.commit();
+
+        // Respond with the created user's ID and username
         res.status(201).json({
-            id: result.insertId,
+            id: authResult.insertId,
             username,
-            artist_id
+            artist_id: artistId
         });
     } catch (err) {
+        await connection.rollback();
         if (process.env.NODE_ENV === 'development') {
             console.error('Error creating user:', err);
         }
         res.status(500).json({ error: 'Internal server error' });
+    } finally {
+        connection.release();
     }
 };
-
-const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
     const { username, password } = req.body;

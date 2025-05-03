@@ -1,6 +1,10 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+  throw new Error('Missing required database environment variables');
+}
+
 const db = mysql.createPool({
   host: process.env.DB_HOST,       // Database host from .env
   user: process.env.DB_USER,       // Database username from .env
@@ -10,7 +14,3 @@ const db = mysql.createPool({
 });
 
 module.exports = db;
-
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
-  throw new Error('Missing required database environment variables');
-}
