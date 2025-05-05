@@ -1,97 +1,104 @@
-const db = require('../config/db');
+const Auth = require('../models/auth');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 
-exports.getAuth = async (req, res) => {
+exports.createUser = async (req, res) => {
     try {
-    const [rows] = await db.query('SELECT id, username, password FROM auth'); // Updated table name to "users"
-    res.json(rows);
-    } catch (err) {
-    console.error('Error fetching users:', err); // Updated error message
-    res.status(500).json({ error: 'Internal server error' }); // Updated response message
-    }
-}
-
-exports.createAuth = async (req, res) => {
-    const { username, password, name, email } = req.body; // Include 'email' here
-
-    if (!username || !password || !name || !email) {
-        return res.status(400).json({ error: 'Username, password, name, and email are required' });
-    }
-
-    const connection = await db.getConnection(); // Use a transaction for atomicity
-
-    try {
-        await connection.beginTransaction();
+        const { username, password, artistId } = req.body;
 
         // Check if the username already exists
-        const [existingUser] = await connection.query('SELECT * FROM auth WHERE username = ?', [username]);
-        if (existingUser.length > 0) {
-            await connection.rollback();
+        const existingUser = await Auth.findByUsername(username);
+        if (existingUser) {
             return res.status(400).json({ error: 'Username already exists' });
         }
-
-        // Insert a new artist into the artist table
-        const [artistResult] = await connection.query('INSERT INTO artists (name, email) VALUES (?, ?)', [name, email]);
-        const artistId = artistResult.insertId;
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert the new user into the auth table
-        const [authResult] = await connection.query(
-            'INSERT INTO auth (username, password, artist_id) VALUES (?, ?, ?)',
-            [username, hashedPassword, artistId]
-        );
-
-        await connection.commit();
-
-        // Respond with the created user's ID and username
-        res.status(201).json({
-            id: authResult.insertId,
-            username,
-            artist_id: artistId
-        });
+        // Create the user
+        const userId = await Auth.create({ username, password: hashedPassword, artistId });
+        res.status(201).json({ id: userId, username, artistId });
     } catch (err) {
-        await connection.rollback();
-        if (process.env.NODE_ENV === 'development') {
-            console.error('Error creating user:', err);
-        }
+        console.error('Error creating user:', err);
         res.status(500).json({ error: 'Internal server error' });
-    } finally {
-        connection.release();
     }
 };
 
-exports.login = async (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Username and password are required' });
-    }
-
+exports.loginUser = async (req, res) => {
     try {
-        const [user] = await db.query('SELECT * FROM auth WHERE username = ?', [username]);
-        if (user.length === 0) {
+        const { username, password } = req.body;
+
+        // Find the user by username
+        const user = await Auth.findByUsername(username);
+        if (!user) {
             return res.status(404).json({ error: 'Invalid username or password' });
         }
 
-        const isMatch = await bcrypt.compare(password, user[0].password);
-        if (!isMatch) {
+        // Compare the provided password with the hashed password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
+        // Generate a JWT token
         const token = jwt.sign(
-            { id: user[0].id, username: user[0].username },
+            { id: user.id, username: user.username, artistId: user.artist_id },
             process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+            { expiresIn: '1h' }
         );
 
-        res.json({ message: 'Login successful', token });
+        res.status(200).json({ token, username: user.username, artistId: user.artist_id });
     } catch (err) {
-        if (process.env.NODE_ENV === 'development') {
-            console.error('Error logging in:', err);
+        console.error('Error logging in user:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Find the user by ID
+        const user = await Auth.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
         }
+
+        res.json(user);
+    } catch (err) {
+        console.error('Error fetching user:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.updatePassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { newPassword } = req.body;
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password
+        await Auth.updatePassword(id, hashedPassword);
+
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (err) {
+        console.error('Error updating password:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Delete the user
+        await Auth.delete(id);
+
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting user:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

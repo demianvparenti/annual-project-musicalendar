@@ -3,13 +3,19 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
-// Public routes
-router.post('/', authController.createAuth); // Registration
-router.post('/login', authController.login); // Login
+// Register a new user (no authentication required)
+router.post('/register', authController.createUser);
 
-// Protected routes
-//router.get('/', authenticateToken, authController.getAuth); // Fetch all users (admin-only)
-//router.put('/:id', authenticateToken, authController.updateAuth); // Update user
-//router.delete('/:id', authenticateToken, authController.deleteAuth); // Delete user
+// Login a user (no authentication required)
+router.post('/login', authController.loginUser);
+
+// Get a user by ID (authentication required)
+router.get('/:id', authenticateToken, authController.getUserById);
+
+// Update a user's password (authentication required)
+router.put('/:id/password', authenticateToken, authController.updatePassword);
+
+// Delete a user (authentication required)
+router.delete('/:id', authenticateToken, authController.deleteUser);
 
 module.exports = router;
