@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Musicalendar - Configurar Perfil</title>
+        <link rel="stylesheet" href="./css/styles.css">
+        <link rel="icon" href="data:,"> <!-- Prevent favicon error -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <header>
+            <h1>Musicalendar</h1>
+            <nav>
+                <div>
+                    <ul>
+                        <li><a id="index" href="./index.html">Inicio</a></li>
+                        <li><a id="signin" href="./signin.html">Iniciar sesión</a></li>
+                        <li><a id="contact" href="#">Contacto</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <main>
+            <h2>Configurar Perfil</h2>
+            <form id="profile-setup-form">
+                <label for="genre">Género musical:</label>
+                <select id="genre" name="genre" required>
+                    <option value="" disabled selected>Seleccione un género</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Pop">Pop</option>
+                    <option value="Jazz">Jazz</option>
+                    <option value="Classical">Clásico</option>
+                    <option value="Hip-Hop">Hip-Hop</option>
+                    <option value="Electronic">Electrónica</option>
+                    <option value="Country">Tango</option>
+                    <option value="Reggae">Reggae</option>
+                    <option value="Blues">Blues</option>
+                </select>
+                <div id="links-container">
+                    <h3>Enlaces</h3>
+                    <div id="photo-link-container">
+                        <label for="photo">Enlace de Foto:</label>
+                        <input type="text" id="photo" name="photo" placeholder="https://drive.google.com/..." required>
+                    </div>
+                    <button type="button" id="add-link-button">+ Añadir Enlace</button>
+                </div>
+            
+                <button type="submit">Guardar Perfil</button>
+            </form>
+            <div id="profile-success" style="display: none; color: green;">Perfil configurado con éxito.</div>
+            <div id="profile-error" style="display: none; color: red;"></div>
+            <button id="logout-button">Cerrar Sesión</button>
+        </main>
+        <script type="module" src="./js/profileSetup.js"></script>    
+    </body>
+    <footer>
+        <p>&copy; 2025 Musicalendar. Todos los derechos reservados.</p>
+        <div id="social-media">
+            <a href="https://www.facebook.com" target="_blank" aria-label="Facebook">
+                <i class="fab fa-facebook"></i>
+            </a>
+            <a href="https://www.twitter.com" target="_blank" aria-label="Twitter">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://www.instagram.com" target="_blank" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+    </footer>
+</html>

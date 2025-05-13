@@ -1,105 +1,65 @@
-addEventListener("DOMContentLoaded", function() {
-    //document.getElementById('signin-form').addEventListener('submit', function(event) {
-    //    event.preventDefault(); // Prevent form submission for demonstration
-    //    const username = document.getElementById('username').value;
-    //    const password = document.getElementById('password').value;
+document.addEventListener('DOMContentLoaded', async () => {
+    const navList = document.getElementById('nav-list');
+    const token = localStorage.getItem('token'); // Retrieve the JWT token from localStorage
 
-        // Simulate verification (replace with actual server-side validation)
-    //    if (username === "validUser" && password === "validPassword") {
-    //        document.getElementById('success-message').style.display = 'block';
-    //    } else {
-    //        alert('Nombre de usuario o contraseña incorrectos.');
-    //    }
-    //});
+    if (token) {
+        // Decode the token to check the user's role (if your token contains role information)
+        const payload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
+        const isArtist = payload.role === 'user'; // Adjust based on your backend's token structure
 
-    const signupForm = document.getElementById('signup-form');
-    if (!signupForm) {
-        console.error('Signup form not found in the DOM');
-        return;
-    }
+        if (isArtist) {
+            // Add "Create Event" link to the navigation menu
+            const createEventLink = document.createElement('li');
+            createEventLink.innerHTML = `<a id="setup-event" href="event-setup.html">Crear Evento</a>`;
+            navList.appendChild(createEventLink);
 
-    signupForm.addEventListener('submit', async function (event) {
-        event.preventDefault();
-        console.log('Signup form submitted');
-    
-        // Retrieve values from the form
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const name = document.getElementById('name').value.trim();
-    
-        try {
-            // Send the data to the backend
-            const response = await fetch('http://localhost:3000/api/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password, email, name }),
-            });
-    
-            const data = await response.json();
-            if (response.ok) {
-                document.getElementById('signup-success').style.display = 'block';
-                document.getElementById('signup-success').textContent = 'Usuario creado con éxito.';
-            } else {
-                document.getElementById('signup-error').style.display = 'block';
-                document.getElementById('signup-error').textContent = data.error || 'Error al crear el usuario.';
+            // Optionally, remove the "Iniciar sesión" link if the user is logged in
+            const signinLink = document.getElementById('signin');
+            if (signinLink) {
+                signinLink.parentElement.removeChild(signinLink);
             }
-        } catch (err) {
-            console.error('Error:', err);
-            document.getElementById('signup-error').style.display = 'block';
-            document.getElementById('signup-error').textContent = 'Error al conectar con el servidor.';
+
+            // Add "Sign out" link to the navigation menu
+            const signoutLink = document.createElement('li');
+            signoutLink.innerHTML = `<a id="signout" href="#">Cerrar sesión</a>`;
+            navList.appendChild(signoutLink);
+            signoutLink.addEventListener('click', () => {
+                localStorage.removeItem('token'); // Remove the token from localStorage
+                window.location.href = './index.html'; // Redirect to the home page
+            });
         }
-    });
+    }
+
+    const eventsContainer = document.getElementById('events-container');
+
+    try {
+        const response = await fetch('http://127.0.0.1:3000/api/events'); // Adjust the API URL
+        if (!response.ok) {
+            throw new Error('Failed to fetch events');
+        }
+
+        const events = await response.json();
+
+        // Populate the events container
+        events.forEach(event => {
+            const eventCard = document.createElement('div');
+            eventCard.classList.add('event-card');
+
+            eventCard.innerHTML = `
+                <img src="${event.flyer_link}" alt="${event.artist_name}">
+                <div class="details">
+                    <h3>${event.artist_name}</h3>
+                    <p><strong>Fecha:</strong> ${new Date(event.date_time).toLocaleDateString()}</p>
+                    <p><strong>Ubicación:</strong> ${event.location}</p>
+                    <p><strong>Género:</strong> ${event.artist_genre}</p>
+                    <a href="#">Más detalles</a>
+                </div>
+            `;
+
+            eventsContainer.appendChild(eventCard);
+        });
+    } catch (err) {
+        console.error('Error loading events:', err);
+        eventsContainer.innerHTML = '<p>Error al cargar los eventos.</p>';
+    }
 });
-
-
-function validateUsername(username) {
-    const regex = /^[a-zA-ZÀ-ÿ\s]{2,16}$/;
-    
-    /* 
-        Desglose de la Expresión Regular
-        Mínimo de 2 caracteres
-        Máximo de 15 caracteres
-        Puede contener letras, espacios y puede llevar acentos.       
-    */
-           
-    return regex.test(username);
-}
-function validatePassword(password) {
-    const regex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    
-    /* 
-        Desglose de la Expresión Regular
-        Mínimo de 8 caracteres
-        Debe contener al menos una letra y un número.
-    */
-    
-    return regex.test(password);
-}
-
-function checkForm(event) {
-
-    event.preventDefault();
-
-    const USERNAME = document.getElementById("username");
-    const PASSWORD = document.getElementById("password");
-    const ERROR_USERNAME = document.getElementById("errorUsername");
-    const ERROR_PASSWORD = document.getElementById("errorPassword");
-    ERROR_USERNAME.innerHTML = '';
-    ERROR_PASSWORD.innerHTML = '';
-
-    let hasError = false;
-
-    if (!validateUsername(USERNAME.value.trim()) && USERNAME.required) {
-        ERROR_USERNAME.innerHTML = "Nombre debe tener entre 2 y 15 caracteres alfabéticos.<br>";
-        hasError = true;
-    }
-    if (!validatePassword(PASSWORD.value.trim()) && PASSWORD.required) {
-        ERROR_PASSWORD.innerHTML = "Contraseña incorrecta.<br>";
-        hasError = true;
-    }
-    //if (!hasError) {
-    //}
-}

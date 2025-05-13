@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const artistsRoutes = require('./routes/artists');
-const eventsRoutes = require('./routes/events'); // Import the events routes
-const authRoutes = require('./routes/auth');
+const artistsRoutes = require('./routes/artistsRoute');
+const eventsRoutes = require('./routes/eventsRoute'); // Import the events routes
+const authRoutes = require('./routes/authRoute');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 app.use(cors());

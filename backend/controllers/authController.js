@@ -1,25 +1,32 @@
 const Auth = require('../models/auth');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const db = require('../config/db');
 
 exports.createUser = async (req, res) => {
+    const { username, password, name, email } = req.body;
+
     try {
-        const { username, password, artistId } = req.body;
+        // Step 1: Create the artist
+        const [artistResult] = await db.query(
+            'INSERT INTO artists (name, email) VALUES (?, ?)',
+            [name, email]
+        );
 
-        // Check if the username already exists
-        const existingUser = await Auth.findByUsername(username);
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
+        const artistId = artistResult.insertId; // Get the newly created artist's ID
 
-        // Hash the password
+        // Step 2: Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create the user
-        const userId = await Auth.create({ username, password: hashedPassword, artistId });
-        res.status(201).json({ id: userId, username, artistId });
+        // Step 3: Create the auth record
+        await db.query(
+            'INSERT INTO auth (username, password, artist_id) VALUES (?, ?, ?)',
+            [username, hashedPassword, artistId]
+        );
+
+        res.status(201).json({ message: 'User registered successfully', artistId });
     } catch (err) {
-        console.error('Error creating user:', err);
+        console.error('Error during registration:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -40,14 +47,21 @@ exports.loginUser = async (req, res) => {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Generate a JWT token
+        // Fetch the artistId from the database
+        const [artistResult] = await db.query(
+            'SELECT artist_id FROM auth WHERE id = ?',
+            [user.id]
+        );
+        const artistId = artistResult[0]?.artist_id || null; // Get the artistId (if it exists)
+
+        // Generate a JWT token with the user's role and artistId
         const token = jwt.sign(
-            { id: user.id, username: user.username, artistId: user.artist_id },
+            { id: user.id, username: user.username, role: user.role, artistId }, // Include artistId
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
-        res.status(200).json({ token, username: user.username, artistId: user.artist_id });
+        res.status(200).json({ token, username: user.username, role: user.role });
     } catch (err) {
         console.error('Error logging in user:', err);
         res.status(500).json({ error: 'Internal server error' });
