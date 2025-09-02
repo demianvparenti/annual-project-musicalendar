@@ -12,7 +12,7 @@ class Artist {
     static async findById(id) {
         const [rows] = await db.query('SELECT * FROM artists WHERE id = ?', [id]);
         if (rows[0] && rows[0].links) {
-            rows[0].links = JSON.parse(rows[0].links); // Parse the JSON string into an object/array
+            rows[0].links = rows[0].links; // Parse the JSON string into an object/array
         }
         return rows[0];
     }
