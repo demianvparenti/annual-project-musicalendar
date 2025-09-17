@@ -2,10 +2,10 @@ const db = require('../config/db');
 
 class Event {
     // Create a new event
-    static async create({ name, date, location, description, artistId }) {
+    static async create({ id, artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link, description}) {
         const [result] = await db.query(
-            'INSERT INTO events (name, date, location, description, artist_id) VALUES (?, ?, ?, ?, ?)',
-            [name, date, location, description, artistId]
+            'INSERT INTO events (id, artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link, description) VALUES (?, ?, ?, ?, ?)',
+            [id, artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link, description]
         );
         return result.insertId;
     }
@@ -23,16 +23,16 @@ class Event {
     }
 
     // Find events by artist ID
-    static async findByArtistId(artistId) {
-        const [rows] = await db.query('SELECT * FROM events WHERE artist_id = ?', [artistId]);
+    static async findByArtistId(aritst_id) {
+        const [rows] = await db.query('SELECT * FROM events WHERE artist_id = ?', [artist_id]);
         return rows;
     }
 
     // Update an event
-    static async update(id, { name, date, location, description }) {
+    static async update({id, artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link, description }) {
         await db.query(
-            'UPDATE events SET name = ?, date = ?, location = ?, description = ? WHERE id = ?',
-            [name, date, location, description, id]
+            'UPDATE events SET artist_id = ?, date_time = ?, location = ?, entry_mode = ?, price = ?, ticket_link = ?, flyer_link = ?, description = ? WHERE id = ?',
+            [id, artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link, description]
         );
     }
 

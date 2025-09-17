@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add menu buttons dynamically
     const buttons = [
         { text: 'Inicio', id: 'home-btn', href: 'index.html' },
-        { text: 'Contacto', id: 'contact-btn', href: 'contact.html' },
         { text: 'Mi perfil', id: 'profile-btn', href: 'profile-setup.html' },
         { text: 'Crear evento', id: 'create-event-btn', href: 'event-setup.html' },
         { text: 'Cerrar sesión', id: 'logout-btn', href: '#' },
@@ -40,8 +39,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (buttonData.id === 'logout-btn') {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
-                localStorage.removeItem('token');
-                window.location.reload();
+                const token = localStorage.getItem('token');
+                if (token) {
+                    localStorage.removeItem('token');
+                    console.log('Token removed.');
+                } else {
+                    console.warn('No token found in localStorage.');
+                }
+                // Redirect to login page or reload the page
+                window.location.href = 'signin.html'; // Redirect to main page
             });
         }
 

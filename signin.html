@@ -11,27 +11,27 @@
     </head>
     <body>
         <header>
-            <h1>Musicalendar</h1>
             <nav id="navbar-include"></nav>
         </header>
         <main>
-            <div id="content">
+            <div id="signin-container">
                 <section id="hero">
                     <h2>Iniciar sesión</h2>
                 </section>
+                <form id="signin-form">
+                    <label for="username">Nombre de usuario:</label>
+                    <input type="text" id="username" name="username" required>
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required>
+                    <button type="submit" class="w3-btn w3-black">Iniciar sesión</button>
+                </form>
+                <div id="signin-error" style="display: none; color: red;"></div>
+                <div id="signin-success" style="display: none; color: green;">Inicio de sesión exitoso.</div>
+                <div id="signup-link">
+                    <h3>¿No tienes una cuenta?</h3>
+                    <p><a href="./signup.html" class="w3-btn w3-black">Registrarse</a></p>
+                </div>
             </div>
-            <form id="signin-form">
-                <label for="username">Nombre de usuario:</label>
-                <input type="text" id="username" name="username" required>
-                <label for="password">Contraseña:</label>
-                <input type="password" id="password" name="password" required>
-                <button type="submit" class="w3-btn w3-black">Iniciar sesión</button>
-            </form>
-            <div id="signin-error" style="display: none; color: red;"></div>
-            <div id="signin-success" style="display: none; color: green;">Inicio de sesión exitoso.</div>
-            <div id="signup-link">
-                <h3>¿No tienes una cuenta?</h3>
-                <p><a href="./signup.html" class="w3-btn w3-black">Registrarse</a></p>
         </main>
         <script src="./js/signin.js"></script>
         <script src="./js/frontDispatcher.js"></script>

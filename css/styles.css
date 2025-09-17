@@ -312,3 +312,79 @@ header{
     flex: 3 1 600px; /* Allow the events container to shrink and grow */
     max-width: 100%; /* Ensure it doesn't exceed the container width */
 }
+
+/* Center the sign-in container */
+#signin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh; /* Center vertically */
+    padding: 20px;
+    background-color: #111; /* Optional: Background color */
+    border-radius: 10px; /* Optional: Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Shadow */
+}
+
+/* Style the form */
+#signin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Add spacing between fields */
+    width: 100%;
+    max-width: 400px; /* Limit the width of the form */
+}
+
+#signin-form label {
+    font-size: 16px;
+    color: #fff;
+}
+
+#signin-form input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background-color: #222;
+    color: #fff;
+}
+
+#signin-form button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#signin-form button:hover {
+    background-color: #555;
+}
+
+/* Style the signup link */
+#signup-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#signup-link h3 {
+    font-size: 18px;
+    color: #fff;
+}
+
+#signup-link a {
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+#signup-link a:hover {
+    background-color: #555;
+}

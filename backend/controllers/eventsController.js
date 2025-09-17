@@ -4,40 +4,45 @@ const Event = require('../models/events');
 
 exports.createEvent = async (req, res) => {
     try {
-        // Extract the token from the Authorization header
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Unauthorized: No token provided' });
         }
 
-        // Decode the token to get the artistId
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const artistId = decoded.artistId; // Extract the artistId from the token
+        const artistId = decoded.artistId;
 
         if (!artistId) {
             return res.status(403).json({ error: 'Access denied: Artist ID not found in token' });
         }
 
-        // Extract other fields from the request body
-        const { date_time, location, entry_mode, price, ticket_link, flyer_link } = req.body;
+        const { date_time, location, entry_mode, price, ticket_link, flyer_link, description } = req.body;
 
-        // Validate required fields
-        if (!date_time || !location) {
-            return res.status(400).json({ error: 'All required fields must be filled.' });
+        console.log('Description:', description); // Debugging line
+
+        if (!date_time || !location || !description || typeof description !== 'string' || description.trim() === '') {
+            return res.status(400).json({ error: 'All required fields must be filled, including a valid description.' });
         }
 
-        // Validate entry_mode
         const allowedEntryModes = ['gorra', 'gratuito', 'beneficio', 'arancelado'];
         if (!allowedEntryModes.includes(entry_mode)) {
             return res.status(400).json({ error: 'Invalid entry mode.' });
         }
 
-        // Insert the event into the database
         const query = `
-            INSERT INTO events (artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO events (artist_id, date_time, location, entry_mode, price, ticket_link, flyer_link, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        await db.query(query, [artistId, date_time, location, entry_mode, price, ticket_link, flyer_link]);
+        await db.query(query, [
+            artistId,
+            date_time,
+            location,
+            entry_mode,
+            price || null,
+            ticket_link || null,
+            flyer_link || null,
+            description.trim() // Ensure description is trimmed and valid
+        ]);
 
         res.status(201).json({ message: 'Event created successfully!' });
     } catch (err) {
@@ -74,6 +79,7 @@ exports.getAllEvents = async (req, res) => {
                 events.price,
                 events.ticket_link,
                 events.flyer_link,
+                events.description,
                 artists.name AS artist_name,
                 artists.genre AS artist_genre
             FROM events

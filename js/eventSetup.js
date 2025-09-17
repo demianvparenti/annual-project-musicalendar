@@ -8,6 +8,7 @@ document.getElementById('create-event-form').addEventListener('submit', async (e
     const price = document.getElementById('price').value || null;
     const ticketLink = document.getElementById('ticket_link').value || null;
     const flyerLink = document.getElementById('flyer_link').value || null;
+    const description = document.getElementById('description').value;
 
     // Combine date and time into a single datetime string
     const dateTime = `${date}T${time}`;
@@ -19,7 +20,17 @@ document.getElementById('create-event-form').addEventListener('submit', async (e
         price,
         ticket_link: ticketLink,
         flyer_link: flyerLink,
+        description,
     };
+
+    const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(payload),
+    });
 
     try {
         const token = localStorage.getItem('token');

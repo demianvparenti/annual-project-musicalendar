@@ -1,10 +1,66 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Load navbar and footer
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('navbar-include').innerHTML = data;
-        });
+    // Create the navbar dynamically
+    const navbar = document.getElementById('navbar-include');
+
+    // Create the page title
+    const pageTitle = document.createElement('h1');
+    pageTitle.id = 'page-title';
+    pageTitle.textContent = 'Musicalendar'; // Set the title text
+    navbar.appendChild(pageTitle);
+
+    // Create the hamburger menu button
+    const hamburgerMenu = document.createElement('button');
+    hamburgerMenu.id = 'hamburger-menu';
+    hamburgerMenu.className = 'w3-btn w3-black';
+    hamburgerMenu.innerHTML = '&#9776;'; // Hamburger icon
+    navbar.appendChild(hamburgerMenu);
+
+    // Create the menu items container
+    const menuItems = document.createElement('div');
+    menuItems.id = 'menu-items';
+    navbar.appendChild(menuItems);
+
+    // Add menu buttons dynamically
+    const buttons = [
+        { text: 'Inicio', id: 'home-btn', href: 'index.html' },
+        { text: 'Mi perfil', id: 'profile-btn', href: 'profile-setup.html' },
+        { text: 'Crear evento', id: 'create-event-btn', href: 'event-setup.html' },
+        { text: 'Cerrar sesión', id: 'logout-btn', href: '#' },
+    ];
+
+    buttons.forEach((buttonData) => {
+        const button = document.createElement('a');
+        button.className = 'w3-btn w3-black';
+        button.id = buttonData.id;
+        button.href = buttonData.href;
+        button.textContent = buttonData.text;
+
+        // Add logout functionality for "Cerrar sesión"
+        if (buttonData.id === 'logout-btn') {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const token = localStorage.getItem('token');
+                if (token) {
+                    localStorage.removeItem('token');
+                    console.log('Token removed.');
+                } else {
+                    console.warn('No token found in localStorage.');
+                }
+                // Redirect to login page or reload the page
+                window.location.href = 'signin.html'; // Redirect to main page
+            });
+        }
+
+        menuItems.appendChild(button);
+    });
+
+    // Add functionality to toggle the menu visibility
+    hamburgerMenu.addEventListener('click', () => {
+        menuItems.classList.toggle('active'); // Toggle the "active" class
+    });  
+
+    // Append the navbar to the document body or a specific container
+    document.body.prepend(navbar);
 
     fetch('footer.html')
         .then(response => response.text())
