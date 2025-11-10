@@ -72,21 +72,28 @@ exports.getAllEvents = async (req, res) => {
     try {
         const query = `
             SELECT 
-                events.id,
-                events.date_time,
-                events.location,
-                events.entry_mode,
-                events.price,
-                events.ticket_link,
-                events.flyer_link,
-                events.description,
-                artists.name AS artist_name,
+                events.id, 
+                events.date_time, 
+                events.location, 
+                events.entry_mode, 
+                events.price, 
+                events.ticket_link, 
+                events.flyer_link, 
+                events.description, 
+                artists.name AS artist_name, 
                 artists.genre AS artist_genre
             FROM events
             JOIN artists ON events.artist_id = artists.id
         `;
-        const [events] = await db.query(query); // Use your database connection
-        res.json(events);
+        const rows = await db.query(query);
+
+        console.log('Events query result:', rows); // Debugging line
+
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ error: 'No events found' });
+        }
+
+        res.status(200).json(rows); // Return rows as an array
     } catch (err) {
         console.error('Error fetching events:', err);
         res.status(500).json({ error: 'Internal server error' });

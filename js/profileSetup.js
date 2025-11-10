@@ -26,6 +26,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Function to check if the token is expired
+    function isTokenExpired(token) {
+        const payload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
+        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+        return payload.exp < currentTime; // Check if the token has expired
+    }
+
+    // Function to monitor token expiration
+    function monitorTokenExpiration(token) {
+        const payload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
+        const expirationTime = payload.exp * 1000; // Convert expiration time to milliseconds
+        const timeUntilExpiration = expirationTime - Date.now();
+
+        if (timeUntilExpiration > 0) {
+            setTimeout(() => {
+                alert('Your session has expired. Please log in again.');
+                localStorage.removeItem('token'); // Remove the token
+                window.location.href = './signin.html'; // Redirect to the login page
+            }, timeUntilExpiration);
+        } else {
+            // Token is already expired
+            alert('Your session has expired. Please log in again.');
+            localStorage.removeItem('token');
+            window.location.href = './signin.html';
+        }
+    }
+
+    // Check token before making API requests
+    const token = localStorage.getItem('token');
+    if (!token || isTokenExpired(token)) {
+        alert('Your session has expired. Please log in again.');
+        localStorage.removeItem('token'); // Remove the token
+        window.location.href = './signin.html'; // Redirect to the login page
+        return;
+    }
+
+    // Monitor token expiration
+    monitorTokenExpiration(token);
+
     // Handle form submission
     document.getElementById('profile-setup-form').addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -58,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const token = localStorage.getItem('token'); // Retrieve the JWT from localStorage
             const response = await fetch('http://127.0.0.1:3000/api/artists/profile', {
                 method: 'POST',
                 headers: {
@@ -82,11 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Logout button functionality
     document.getElementById('logout-button').addEventListener('click', () => {
-    // Clear the token from localStorage
-    localStorage.removeItem('token');
-
-    // Redirect the user to the login page
-    window.location.href = './index.html'; // Adjust the path to your login page
-});
+        localStorage.removeItem('token'); // Clear the token from localStorage
+        window.location.href = './signin.html'; // Redirect to the login page
+    });
 });

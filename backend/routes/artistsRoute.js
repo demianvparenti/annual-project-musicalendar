@@ -15,4 +15,7 @@ router.put('/:id', authenticateToken, authorizeRole('admin'), artistController.u
 // Profile setup route
 router.post('/profile', authenticateToken, artistController.setupProfile);
 
+// Define the route for public profile
+router.get('/public-profile', artistController.getPublicProfile);
+
 module.exports = router;

@@ -97,7 +97,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const eventDetailsContainer = document.getElementById('event-details-container');
         eventDetailsContainer.innerHTML = `
             <div class="event-details">
-                <h1>${artist.name || 'Nombre no disponible'}</h1>
+                <h1><a href="profile-public.html?id=${artist.id}" class="artist-link">
+                                ${artist.name}
+                            </a></h1>
                 <img src="./20250311204105-1.png" alt="${artist.name || 'Imagen no disponible'}" height="200px">
                 <p><strong>Fecha:</strong> ${event.date_time ? new Date(event.date_time).toLocaleDateString() : 'Fecha no disponible'}</p>
                 <p><strong>Ubicación:</strong> ${event.location || 'Ubicación no disponible'}</p>

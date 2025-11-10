@@ -2,10 +2,6 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const mysql = require('mysql2/promise');
 
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
-  throw new Error('Missing required database environment variables');
-}
-
 const db = mysql.createPool({
   host: process.env.DB_HOST,       // Database host from .env
   user: process.env.DB_USER,       // Database username from .env
@@ -14,4 +10,9 @@ const db = mysql.createPool({
   port: process.env.DB_PORT || 3306, // Optional: Default to 3306 if not specified
 });
 
-module.exports = db;
+module.exports = {
+    query: async (sql, params) => {
+        const [rows] = await db.execute(sql, params); // Return rows directly
+        return rows; // Do not wrap rows in an array
+    },
+};

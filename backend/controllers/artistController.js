@@ -15,13 +15,73 @@ exports.createArtist = async (req, res) => {
 exports.getArtistById = async (req, res) => {
     try {
         const { id } = req.params;
-        const artist = await Artist.findById(id);
-        if (!artist) {
+
+        const query = `
+            SELECT id, name, photo, genre, links
+            FROM artists
+            WHERE id = ?
+        `;
+        const rows = await db.query(query, [id]);
+
+        //console.log('DB query result:', rows); // Debugging line
+
+        if (!rows || rows.length === 0) {
+            console.error('No artist found for ID:', id); // Debugging line
             return res.status(404).json({ error: 'Artist not found' });
         }
-        res.json(artist);
+
+        const artist = rows[0]; // Assign the first element of rows
+        console.log('Artist object:', artist); // Debugging line
+
+        // Use links directly if it's already an array
+        const links = Array.isArray(artist.links) ? artist.links : [];
+
+        res.status(200).json({
+            id: artist.id,
+            name: artist.name,
+            photo: artist.photo,
+            genre: artist.genre,
+            links: links,
+        });
     } catch (err) {
         console.error('Error fetching artist:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.getPublicProfile = async (req, res) => {
+    try {
+        const artistId = req.query.id; // Get artist ID from query parameters
+        console.log('Artist ID received:', artistId); // Debugging line
+
+        if (!artistId) {
+            return res.status(400).json({ error: 'Artist ID is required' });
+        }
+
+        const query = `
+            SELECT id, name, photo, genre, links
+            FROM artists
+            WHERE id = ?
+        `;
+        const rows = await db.query(query, [artistId]);
+
+        console.log('DB query result:', rows); // Debugging line
+
+        if (!rows || rows.length === 0) {
+            console.error('No artist found for ID:', artistId); // Debugging line
+            return res.status(404).json({ error: 'Artist not found' });
+        }
+
+        const artist = rows[0];
+        res.status(200).json({
+            id: artist.id,
+            name: artist.name,
+            photo: artist.photo,
+            genre: artist.genre,
+            links: artist.links,
+        });
+    } catch (err) {
+        console.error('Error fetching public profile:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

@@ -5,23 +5,20 @@ exports.authenticateToken = (req, res, next) => {
     const authHeader = req.header('Authorization');
     console.log('Authorization Header:', authHeader); // Debugging: Log the Authorization header
 
-    const token = authHeader && authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
-    console.log('Extracted Token:', token); // Debugging: Log the extracted token
-
+    const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-        console.error('Access denied: Token missing'); // Debugging: Log missing token
-        return res.status(401).json({ error: 'Access denied, token missing' });
+        return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
-        console.log('Decoded Token:', decoded); // Debugging: Log the decoded token
-
-        req.user = decoded; // Attach the decoded user info to the request object
-        next(); // Proceed to the next middleware or route handler
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
     } catch (err) {
-        console.error('Invalid token:', err); // Debugging: Log token verification error
-        res.status(403).json({ error: 'Invalid token' });
+        if (err.name === 'TokenExpiredError') {
+            return res.status(403).json({ error: 'Session expired. Please log in again.' });
+        }
+        return res.status(403).json({ error: 'Invalid token' });
     }
 };
 
